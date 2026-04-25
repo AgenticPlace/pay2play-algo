@@ -75,16 +75,27 @@ curl -H "X-Algo-Payment: <confirmed-tx-id>" http://localhost:3010/data
 
 Both shapes round-trip through the same `PaymentPayload` discriminated union (vendored from pay2play-arc), and both use the same `Session` voucher buffer for batched flushing.
 
+## Fees, precision, PPMT
+
+See [`docs/fees.md`](./docs/fees.md) for the full fee table, precision
+guarantees (bigint atomic units, 0–19 decimals lossless), and PPMT
+(Profit-Per-Million-Transactions) projections. To change fees on-chain,
+see [`docs/algorand-setprice.md`](./docs/algorand-setprice.md) — the
+`PaymentMeter.algo.ts` contract exposes a `setPrice(uint64)` admin method
+the creator can call post-deployment.
+
 ## Layout
 
 ```
 pay2play-algo/
 ├── src/
 │   ├── core/             ← vendored from pay2play-arc (don't edit)
-│   │   ├── types.ts
-│   │   ├── session.ts
-│   │   └── (meter.ts is OURS — Algo defaults)
-│   ├── server.ts         ← Express HTTP gateway
+│   │   ├── types.ts          (PaymentPayload tagged union)
+│   │   ├── session.ts        (Voucher buffer + batched flush)
+│   │   ├── decimal.ts        (bigint atomic-unit math)
+│   │   ├── fee.ts            (FeeConfig + PriceBreakdown + PPMT)
+│   │   └── meter.ts          (OURS — Algo defaults)
+│   ├── server.ts         ← Express HTTP gateway w/ 402 + breakdown
 │   └── deploy.ts         ← AlgoKit deploy script
 ├── contracts/
 │   └── PaymentMeter.algo.ts   ← AVM contract (algorand-typescript)
