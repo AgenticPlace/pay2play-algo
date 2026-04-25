@@ -1,0 +1,25 @@
+node_modules/
+dist/
+coverage/
+*.log
+*.tsbuildinfo
+
+# Secrets — NEVER commit
+.env
+.env.local
+.env.*.local
+*.key
+*.pem
+wallets.json
+
+# OS / editor
+.DS_Store
+*.swp
+.vscode/
+.idea/
+
+# Local tool harnesses
+.claude/
+.agents/
+.windsurf/
+scratch/

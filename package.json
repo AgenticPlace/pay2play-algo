@@ -1,0 +1,37 @@
+{
+  "name": "pay2play-algo",
+  "version": "0.1.0",
+  "private": false,
+  "type": "module",
+  "license": "MIT",
+  "description": "pay2play on Algorand — per-request ALGO metering on AVM. Standalone counterpart to pay2play-arc.",
+  "homepage": "https://github.com/AgenticPlace/pay2play-algo",
+  "repository": { "type": "git", "url": "https://github.com/AgenticPlace/pay2play-algo.git" },
+  "scripts": {
+    "start": "tsx src/server.ts",
+    "dev": "tsx watch src/server.ts",
+    "deploy": "tsx src/deploy.ts",
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "sync-core": "bash scripts/sync-core.sh"
+  },
+  "dependencies": {
+    "@algorandfoundation/algokit-utils": "^7.0.0",
+    "algosdk": "^3.2.0",
+    "express": "^4.21.0"
+  },
+  "devDependencies": {
+    "@algorandfoundation/algorand-typescript": "^1.0.0",
+    "@algorandfoundation/puya-ts": "^1.1.0",
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.0"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "packageManager": "pnpm@9.0.0"
+}
