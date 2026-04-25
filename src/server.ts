@@ -19,6 +19,11 @@ import {
   meter,
   ALGORAND_TESTNET_CAIP2,
   isAlgoPayment,
+  feeConfig,
+  priceBreakdown,
+  ALGO_DECIMALS,
+  parseDecimal,
+  formatDecimal,
   type AlgoPaymentPayload,
   type Voucher,
 } from "./core/index.js";
@@ -27,13 +32,56 @@ const PORT = Number(process.env.PORT ?? 3010);
 const APP_ID = BigInt(process.env.ALGO_APP_ID ?? "0");
 const ALGOD_URL = process.env.ALGOD_SERVER ?? "https://testnet-api.algonode.cloud";
 const ALGOD_TOKEN = process.env.ALGOD_TOKEN ?? "";
-const PRICE_MICRO = 1_000n; // 0.001 ALGO
+
+// Bigint-correct fee config — env-controlled, defaults preserve $0.001 / 1000 µALGO.
+const PRICE_USD = process.env.PAY2PLAY_PRICE_USD ?? "0.001";
+const FEE_BPS = process.env.PAY2PLAY_FEE_BPS
+  ? Number(process.env.PAY2PLAY_FEE_BPS)
+  : undefined;
+const GAS_OVERHEAD_USD = process.env.PAY2PLAY_GAS_OVERHEAD_USD;
+
+const algoFeeConfig = feeConfig({
+  basePrice: PRICE_USD,
+  decimals: ALGO_DECIMALS,
+  facilitatorFeeBps: FEE_BPS,
+  gasOverhead: GAS_OVERHEAD_USD,
+  network: ALGORAND_TESTNET_CAIP2,
+  schemeName: "AlgorandAtomicPay",
+  symbol: "microALGO",
+});
+const PRICE_MICRO = algoFeeConfig.basePriceAtomic;
 
 const algod = new algosdk.Algodv2(ALGOD_TOKEN, ALGOD_URL, 443);
 
+/** Serialize a PriceBreakdown for JSON transport (bigints → strings). */
+function serializeBreakdown(b: ReturnType<typeof priceBreakdown>) {
+  return {
+    totalAtomic: b.totalAtomic.toString(),
+    totalDisplay: b.totalDisplay,
+    components: {
+      base: { atomic: b.components.base.atomic.toString(), display: b.components.base.display },
+      facilitatorFee: {
+        atomic: b.components.facilitatorFee.atomic.toString(),
+        display: b.components.facilitatorFee.display,
+      },
+      gasOverhead: {
+        atomic: b.components.gasOverhead.atomic.toString(),
+        display: b.components.gasOverhead.display,
+      },
+    },
+    netMarginAtomic: b.netMarginAtomic.toString(),
+    netMarginDisplay: b.netMarginDisplay,
+    ppmtAtomic: b.ppmtAtomic.toString(),
+    ppmtDisplay: b.ppmtDisplay,
+    netMarginBps: b.netMarginBps,
+    decimals: b.decimals,
+    symbol: b.symbol,
+  };
+}
+
 /** Build the meter once at startup so price() is reusable. */
 const m = meter(
-  { request: "$0.001" },
+  { request: "$" + PRICE_USD },
   {
     appId: APP_ID > 0n ? Number(APP_ID) : undefined,
     appAddress: APP_ID > 0n ? algosdk.getApplicationAddress(APP_ID).toString() : undefined,
@@ -173,9 +221,11 @@ app.get(
       req.header("X-Algo-Payment") ?? req.header("payment-signature") ?? null;
 
     if (!txId) {
-      // Optional: surface an AlgoPaymentPayload-shaped helper alongside the x402 challenge,
-      // so SDK clients building paymen.payload can mirror the EVM <→ Algo unification.
+      // Surface the x402 challenge + a live PriceBreakdown so the buyer-side
+      // facilitator and any UI can show the exact cost components for this op.
       const challenge = makeChallenge(req);
+      const breakdown = priceBreakdown(algoFeeConfig);
+      const breakdownPerMillion = priceBreakdown(algoFeeConfig, 1_000_000);
       const exampleVoucher: AlgoPaymentPayload = {
         x402Version: 2,
         network: "algorand:testnet-v1.0",
@@ -185,7 +235,14 @@ app.get(
           appId: APP_ID > 0n ? Number(APP_ID) : undefined,
         },
       };
-      res.status(402).json({ ...challenge, _example_payload: exampleVoucher });
+      res.status(402).json({
+        ...challenge,
+        _example_payload: exampleVoucher,
+        breakdown: {
+          perTx: serializeBreakdown(breakdown),
+          per1M: serializeBreakdown(breakdownPerMillion),
+        },
+      });
       return;
     }
 

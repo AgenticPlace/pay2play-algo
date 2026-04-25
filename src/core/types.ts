@@ -1,5 +1,5 @@
-// CORE_SYNCED_AT: 2026-04-25T17:14Z
-// CORE_SOURCE: github.com/AgenticPlace/pay2play-arc @ ed76ba810d5ab29c51b25cf6c6d2c0c2106d571a
+// CORE_SYNCED_AT: 2026-04-25T18:25Z
+// CORE_SOURCE: github.com/AgenticPlace/pay2play-arc @ 7e386939ef9812e1e87b65ec3d461ff0fbc50140
 // DO NOT EDIT BY HAND — sync via scripts/sync-core.sh
 // x402 v2 shapes — canonical from _refs/coinbase/x402/specs/transports-v2/
 // and verified against _refs/arc-nanopayments/lib/x402.ts.

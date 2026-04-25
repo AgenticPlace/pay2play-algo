@@ -14,9 +14,9 @@
 set -euo pipefail
 
 REPO="AgenticPlace/pay2play-arc"
-DEFAULT_PIN="ed76ba810d5ab29c51b25cf6c6d2c0c2106d571a"
+DEFAULT_PIN="7e386939ef9812e1e87b65ec3d461ff0fbc50140"
 TARGET_DIR="$(cd "$(dirname "$0")/.." && pwd)/src/core"
-FILES=(types.ts session.ts)
+FILES=(types.ts session.ts decimal.ts fee.ts)
 
 PIN="$DEFAULT_PIN"
 CHECK_ONLY=0

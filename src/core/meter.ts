@@ -15,22 +15,22 @@ import type {
   UsageKind,
   UsageSignal,
 } from "./types.js";
+import { parseDecimal, ALGO_DECIMALS } from "./decimal.js";
 
 /** Default Algorand testnet network ID (CAIP-2). */
 export const ALGORAND_TESTNET_CAIP2 = "algorand:testnet-v1.0";
 
-/** ALGO has 6 decimal places — same as USDC. */
-const ALGO_DECIMALS = 6;
-
-/** Parse a USD-style price string ("$0.001") to atomic microALGO units. */
+/**
+ * Parse a USD-style price string ("$0.001") to atomic microALGO units.
+ * Delegates to the vendored bigint engine for absolute precision; rejects
+ * inputs with more than 6 fractional digits or negative values.
+ */
 export function parseAlgoPrice(price: string): bigint {
-  const m = /^\$?(\d+(?:\.\d+)?)$/.exec(price.trim());
-  if (!m || m[1] === undefined) throw new Error(`Invalid price string: ${price}`);
-  const parts = m[1].split(".");
-  const whole = parts[0] ?? "0";
-  const frac = parts[1] ?? "";
-  const padded = (frac + "0".repeat(ALGO_DECIMALS)).slice(0, ALGO_DECIMALS);
-  return BigInt(whole) * BigInt(10 ** ALGO_DECIMALS) + BigInt(padded);
+  const atomic = parseDecimal(price, ALGO_DECIMALS);
+  if (atomic < 0n) {
+    throw new Error(`parseAlgoPrice: negative prices not allowed (got "${price}")`);
+  }
+  return atomic;
 }
 
 export interface AlgoMeterOptions {
