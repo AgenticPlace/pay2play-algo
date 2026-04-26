@@ -13,7 +13,7 @@
 #   - Leaves src/core/meter.ts alone (Algo-specific, owned by this repo)
 set -euo pipefail
 
-REPO="AgenticPlace/pay2play-arc"
+REPO="AgenticPlace/pay2play"
 DEFAULT_PIN="7e386939ef9812e1e87b65ec3d461ff0fbc50140"
 TARGET_DIR="$(cd "$(dirname "$0")/.." && pwd)/src/core"
 FILES=(types.ts session.ts decimal.ts fee.ts)

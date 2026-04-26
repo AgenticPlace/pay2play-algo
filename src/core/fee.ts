@@ -1,5 +1,5 @@
-// CORE_SYNCED_AT: 2026-04-25T18:25Z
-// CORE_SOURCE: github.com/AgenticPlace/pay2play-arc @ 7e386939ef9812e1e87b65ec3d461ff0fbc50140
+// CORE_SYNCED_AT: 2026-04-26T00:02Z
+// CORE_SOURCE: github.com/AgenticPlace/pay2play @ 7e386939ef9812e1e87b65ec3d461ff0fbc50140
 // DO NOT EDIT BY HAND — sync via scripts/sync-core.sh
 /**
  * Fee configuration + breakdown + PPMT for pay2play meters.
